@@ -134,7 +134,7 @@ class App:
 
         self._widgets = [self.tl, bf, lc]  # for theme updates
         self.bf = bf
-        self._theme(); self._sync(); self._updbtn(); self._tick()
+        self._theme(); self._sync(); self._updbtn(); self._tick(); self._keep_top()
 
     # ── helpers ──
     def _secs(self, ph=None):
@@ -213,6 +213,15 @@ class App:
         try: self.s["geo"] = self.root.winfo_geometry()
         except: pass
         save(self.s, self.t); self.root.destroy()
+
+    # ── keep on top ──
+    def _keep_top(self):
+        try:
+            import ctypes
+            hwnd = ctypes.windll.user32.GetParent(self.root.winfo_id())
+            ctypes.windll.user32.SetWindowPos(hwnd, -1, 0, 0, 0, 0, 0x0003)
+        except: pass
+        self.root.after(500, self._keep_top)
 
     # ── tick ──
     def _tick(self):
