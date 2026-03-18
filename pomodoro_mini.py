@@ -27,7 +27,7 @@ def load():
          "auto":  bool(s.get("auto",  True)),
          "sound": bool(s.get("sound", True)),
          "top":   bool(s.get("top",   True)),
-         "geo":   str(s.get("geo", "120x55+50+50"))},
+         "geo":   str(s.get("geo", "108x48+50+50"))},
         {"phase":   t.get("phase",   "FOCUS") if t.get("phase") in ("FOCUS","BREAK") else "FOCUS",
          "running": bool(t.get("running", False)),
          "end":     t.get("end")}
@@ -97,17 +97,21 @@ class App:
         # UI
         self.pv = tk.StringVar(value=self.t["phase"])
         self.tv = tk.StringVar(value="25:00")
-        tk.Label(r, textvariable=self.pv,  fg="#d0d0d0", bg=self.BG_F, font=("Segoe UI", 7, "bold")).pack()
-        self.tl = tk.Label(r, textvariable=self.tv, fg="white", bg=self.BG_F, font=("Consolas", 18, "bold"))
-        self.tl.pack()
+        tk.Label(r, textvariable=self.pv, fg="#d0d0d0", bg=self.BG_F,
+                 font=("Segoe UI", 7, "bold"), padx=0, pady=0, bd=0).pack(padx=0, pady=0)
+        self.tl = tk.Label(r, textvariable=self.tv, fg="white", bg=self.BG_F,
+                           font=("Consolas", 18, "bold"), padx=0, pady=0, bd=0)
+        self.tl.pack(padx=0, pady=0)
 
-        bf = tk.Frame(r, bg=self.BG_F); bf.pack(fill="both", expand=True)
+        bf = tk.Frame(r, bg=self.BG_F, bd=0, highlightthickness=0)
+        bf.pack(fill="both", expand=True, padx=0, pady=0)
         for i in range(4): bf.grid_columnconfigure(i, weight=1, uniform="c")
         bf.grid_rowconfigure(0, weight=1)
 
         def btn(t, cmd): return tk.Button(bf, text=t, command=cmd, font=("Segoe UI",7,"bold"),
             width=1, relief="flat", bg=self.BG_BTN, fg="white",
-            activebackground="#444", activeforeground="white", bd=0, highlightthickness=0)
+            activebackground="#444", activeforeground="white",
+            bd=0, highlightthickness=0, padx=0, pady=0)
 
         self.bs = btn("▶", self.toggle); self.bs.grid(row=0, column=0, sticky="nsew")
         btn("⟲", self.reset)          .grid(row=0, column=1, sticky="nsew")
