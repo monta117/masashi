@@ -218,7 +218,10 @@ class App:
     def _keep_top(self):
         try:
             import ctypes
-            hwnd = ctypes.windll.user32.GetParent(self.root.winfo_id())
+            GA_ROOT = 2
+            hwnd = ctypes.windll.user32.GetAncestor(self.root.winfo_id(), GA_ROOT)
+            if not hwnd:
+                hwnd = self.root.winfo_id()
             ctypes.windll.user32.SetWindowPos(hwnd, -1, 0, 0, 0, 0, 0x0003)
         except: pass
         self.root.after(500, self._keep_top)
