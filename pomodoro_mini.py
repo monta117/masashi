@@ -50,6 +50,15 @@ def parse_end(v):
     try: return datetime.fromisoformat(v)
     except: return None
 
+def work_area():
+    try:
+        import ctypes, ctypes.wintypes
+        r = ctypes.wintypes.RECT()
+        ctypes.windll.user32.SystemParametersInfoW(48, 0, ctypes.byref(r), 0)
+        return r.left, r.top, r.right, r.bottom
+    except:
+        return None
+
 
 class App:
     BG_F = "#1e1e1e"; BG_B = "#1b2a1f"; BG_FL = "#3b3b3b"; BG_BTN = "#2b2b2b"
@@ -153,7 +162,14 @@ class App:
     def _move(self, e):
         if not self._drag: return
         x0, y0, wx, wy = self._drag
-        self.root.geometry(f"+{wx+e.x_root-x0}+{wy+e.y_root-y0}")
+        nx = wx + e.x_root - x0
+        ny = wy + e.y_root - y0
+        wa = work_area()
+        if wa:
+            w, h = self.root.winfo_width(), self.root.winfo_height()
+            nx = max(wa[0], min(nx, wa[2] - w))
+            ny = max(wa[1], min(ny, wa[3] - h))
+        self.root.geometry(f"+{nx}+{ny}")
         self.s["geo"] = self.root.winfo_geometry(); save(self.s, self.t)
 
     def _flash(self):
