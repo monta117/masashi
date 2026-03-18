@@ -1,0 +1,244 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  background: #111;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.app {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  width: 100%;
+  transition: background 0.4s;
+}
+
+.app.focus { background: #1a1a2e; }
+.app.break { background: #0f2017; }
+.app.flash { background: #3b3b3b !important; }
+
+.card {
+  background: #1e1e2e;
+  border-radius: 20px;
+  padding: 28px 32px;
+  width: 300px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: 8px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 10px;
+  padding: 4px;
+  width: 100%;
+}
+
+.tab {
+  flex: 1;
+  padding: 6px 0;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: #888;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tab.active {
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+}
+
+.tab:hover:not(.active) {
+  color: #ccc;
+}
+
+/* Circle */
+.circle-wrap {
+  position: relative;
+  width: 160px;
+  height: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.circle-svg {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  transform: rotate(-90deg);
+}
+
+.circle-bg {
+  fill: none;
+  stroke: rgba(255,255,255,0.07);
+  stroke-width: 8;
+}
+
+.focus .circle-fg {
+  fill: none;
+  stroke: #6c8ef5;
+  stroke-width: 8;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.3s linear;
+}
+
+.break .circle-fg {
+  fill: none;
+  stroke: #4caf8a;
+  stroke-width: 8;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.3s linear;
+}
+
+.time-display {
+  font-size: 42px;
+  font-weight: 700;
+  color: #fff;
+  font-family: 'Consolas', 'Courier New', monospace;
+  letter-spacing: 2px;
+  position: relative;
+  z-index: 1;
+}
+
+/* Controls */
+.controls {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.ctrl-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255,255,255,0.08);
+  color: #ccc;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ctrl-btn:hover {
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+}
+
+.ctrl-btn.primary {
+  width: 56px;
+  height: 56px;
+  font-size: 20px;
+  background: #6c8ef5;
+  color: #fff;
+}
+
+.break .ctrl-btn.primary {
+  background: #4caf8a;
+}
+
+.ctrl-btn.primary:hover {
+  opacity: 0.85;
+}
+
+/* Bottom row */
+.bottom-row {
+  display: flex;
+  gap: 8px;
+}
+
+.icon-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: none;
+  background: rgba(255,255,255,0.05);
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-btn:hover {
+  background: rgba(255,255,255,0.12);
+}
+
+.icon-btn.active {
+  background: rgba(108, 142, 245, 0.25);
+}
+
+.break .icon-btn.active {
+  background: rgba(76, 175, 138, 0.25);
+}
+
+.icon-btn.muted {
+  opacity: 0.45;
+}
+
+/* Settings panel */
+.settings-panel {
+  width: 100%;
+  background: rgba(255,255,255,0.04);
+  border-radius: 10px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.setting-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.setting-row label {
+  color: #aaa;
+  font-size: 13px;
+  width: 40px;
+}
+
+.setting-row input {
+  width: 60px;
+  padding: 4px 8px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 6px;
+  color: #fff;
+  font-size: 14px;
+  text-align: center;
+}
+
+.setting-row input:focus {
+  outline: none;
+  border-color: #6c8ef5;
+}
+
+.setting-row span {
+  color: #777;
+  font-size: 12px;
+}
