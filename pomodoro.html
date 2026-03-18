@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PomodoroMini</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  background: #1a1a2e;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.4s;
+}
+
+body.break-mode { background: #0f2017; }
+body.flash { background: #3b3b3b !important; }
+
+.card {
+  background: #1e1e2e;
+  border-radius: 20px;
+  padding: 28px 32px;
+  width: 300px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.tabs {
+  display: flex;
+  gap: 8px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 10px;
+  padding: 4px;
+  width: 100%;
+}
+
+.tab {
+  flex: 1;
+  padding: 6px 0;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: #888;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.tab.active { background: rgba(255,255,255,0.1); color: #fff; }
+.tab:hover:not(.active) { color: #ccc; }
+
+.circle-wrap {
+  position: relative;
+  width: 160px;
+  height: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.circle-svg {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  transform: rotate(-90deg);
+}
+
+.circle-bg { fill: none; stroke: rgba(255,255,255,0.07); stroke-width: 8; }
+.circle-fg {
+  fill: none;
+  stroke: #6c8ef5;
+  stroke-width: 8;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.3s linear;
+}
+body.break-mode .circle-fg { stroke: #4caf8a; }
+
+.time-display {
+  font-size: 42px;
+  font-weight: 700;
+  color: #fff;
+  font-family: 'Consolas', monospace;
+  letter-spacing: 2px;
+  position: relative;
+  z-index: 1;
+}
+
+.controls { display: flex; gap: 12px; align-items: center; }
+
+.ctrl-btn {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255,255,255,0.08);
+  color: #ccc;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex; align-items: center; justify-content: center;
+}
+.ctrl-btn:hover { background: rgba(255,255,255,0.15); color: #fff; }
+.ctrl-btn.primary {
+  width: 56px; height: 56px;
+  font-size: 20px;
+  background: #6c8ef5; color: #fff;
+}
+body.break-mode .ctrl-btn.primary { background: #4caf8a; }
+.ctrl-btn.primary:hover { opacity: 0.85; }
+
+.bottom-row { display: flex; gap: 8px; }
+
+.icon-btn {
+  width: 36px; height: 36px;
+  border-radius: 8px;
+  border: none;
+  background: rgba(255,255,255,0.05);
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex; align-items: center; justify-content: center;
+}
+.icon-btn:hover { background: rgba(255,255,255,0.12); }
+.icon-btn.active { background: rgba(108,142,245,0.25); }
+body.break-mode .icon-btn.active { background: rgba(76,175,138,0.25); }
+.icon-btn.muted { opacity: 0.45; }
+
+.settings-panel {
+  width: 100%;
+  background: rgba(255,255,255,0.04);
+  border-radius: 10px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.setting-row { display: flex; align-items: center; gap: 10px; }
+.setting-row label { color: #aaa; font-size: 13px; width: 44px; }
+.setting-row input {
+  width: 60px;
+  padding: 4px 8px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 6px;
+  color: #fff;
+  font-size: 14px;
+  text-align: center;
+}
+.setting-row input:focus { outline: none; border-color: #6c8ef5; }
+.setting-row span { color: #777; font-size: 12px; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="tabs">
+    <button class="tab active" id="tab-focus" onclick="switchPhase('FOCUS')">Focus</button>
+    <button class="tab" id="tab-break" onclick="switchPhase('BREAK')">Break</button>
+  </div>
+
+  <div class="circle-wrap">
+    <svg class="circle-svg" viewBox="0 0 120 120">
+      <circle class="circle-bg" cx="60" cy="60" r="54"/>
+      <circle class="circle-fg" id="ring" cx="60" cy="60" r="54"/>
+    </svg>
+    <div class="time-display" id="timer">25:00</div>
+  </div>
+
+  <div class="controls">
+    <button class="ctrl-btn" onclick="reset()" title="Reset">⟲</button>
+    <button class="ctrl-btn primary" id="btn-start" onclick="toggleStartPause()" title="Start">▶</button>
+    <button class="ctrl-btn" onclick="skipPhase()" title="Skip">≫</button>
+  </div>
+
+  <div class="bottom-row">
+    <button class="icon-btn" id="btn-sound" onclick="toggleSound()" title="Sound">🔊</button>
+    <button class="icon-btn active" id="btn-auto" onclick="toggleAuto()" title="Auto-advance">🔄</button>
+    <button class="icon-btn" onclick="toggleSettings()" title="Settings">⚙️</button>
+  </div>
+
+  <div class="settings-panel" id="settings-panel" style="display:none">
+    <div class="setting-row">
+      <label>Focus</label>
+      <input type="number" id="inp-focus" min="1" max="120" value="25" onchange="onSettingChange()">
+      <span>min</span>
+    </div>
+    <div class="setting-row">
+      <label>Break</label>
+      <input type="number" id="inp-break" min="1" max="60" value="5" onchange="onSettingChange()">
+      <span>min</span>
+    </div>
+  </div>
+</div>
+
+<script>
+const CIRCUMFERENCE = 2 * Math.PI * 54;
+const ring = document.getElementById('ring');
+ring.style.strokeDasharray = CIRCUMFERENCE;
+
+let phase = 'FOCUS';
+let running = false;
+let remaining = 0;
+let endTime = null;
+let intervalId = null;
+let settings = { focusMin: 25, breakMin: 5, sound: true, autoAdvance: true };
+
+// Load from localStorage
+try {
+  const saved = JSON.parse(localStorage.getItem('pomodoroSettings') || '{}');
+  Object.assign(settings, saved);
+} catch(e) {}
+
+function init() {
+  document.getElementById('inp-focus').value = settings.focusMin;
+  document.getElementById('inp-break').value = settings.breakMin;
+  document.getElementById('btn-sound').classList.toggle('muted', !settings.sound);
+  document.getElementById('btn-auto').classList.toggle('active', settings.autoAdvance);
+  remaining = phaseSeconds(phase);
+  updateDisplay();
+}
+
+function phaseSeconds(p) {
+  return (p === 'FOCUS' ? settings.focusMin : settings.breakMin) * 60;
+}
+
+function fmt(sec) {
+  sec = Math.max(0, sec);
+  return String(Math.floor(sec/60)).padStart(2,'0') + ':' + String(sec%60).padStart(2,'0');
+}
+
+function updateDisplay() {
+  document.getElementById('timer').textContent = fmt(remaining);
+  document.title = fmt(remaining) + ' — ' + (phase === 'FOCUS' ? 'Focus' : 'Break') + ' | PomodoroMini';
+  const total = phaseSeconds(phase);
+  const progress = total > 0 ? (total - remaining) / total : 0;
+  ring.style.strokeDashoffset = CIRCUMFERENCE * (1 - progress);
+}
+
+function applyPhemeTheme() {
+  document.body.classList.toggle('break-mode', phase === 'BREAK');
+  document.getElementById('tab-focus').classList.toggle('active', phase === 'FOCUS');
+  document.getElementById('tab-break').classList.toggle('active', phase === 'BREAK');
+}
+
+function playBeep() {
+  if (!settings.sound) return;
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.frequency.value = 880;
+    osc.type = 'sine';
+    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.5);
+  } catch(e) {}
+}
+
+function flash() {
+  document.body.classList.add('flash');
+  setTimeout(() => document.body.classList.remove('flash'), 400);
+}
+
+function startPhase(p) {
+  phase = p;
+  remaining = phaseSeconds(p);
+  endTime = Date.now() + remaining * 1000;
+  running = true;
+  applyPhemeTheme();
+  document.getElementById('btn-start').textContent = '⏸';
+  clearInterval(intervalId);
+  intervalId = setInterval(tick, 200);
+  updateDisplay();
+}
+
+function tick() {
+  const sec = Math.ceil((endTime - Date.now()) / 1000);
+  if (sec <= 0) {
+    remaining = 0;
+    updateDisplay();
+    clearInterval(intervalId);
+    running = false;
+    playBeep();
+    flash();
+    const next = phase === 'FOCUS' ? 'BREAK' : 'FOCUS';
+    if (settings.autoAdvance) {
+      startPhase(next);
+    } else {
+      phase = next;
+      remaining = phaseSeconds(next);
+      endTime = null;
+      applyPhemeTheme();
+      document.getElementById('btn-start').textContent = '▶';
+      updateDisplay();
+    }
+  } else {
+    remaining = sec;
+    updateDisplay();
+  }
+}
+
+function toggleStartPause() {
+  if (!running) {
+    endTime = Date.now() + remaining * 1000;
+    running = true;
+    document.getElementById('btn-start').textContent = '⏸';
+    clearInterval(intervalId);
+    intervalId = setInterval(tick, 200);
+  } else {
+    clearInterval(intervalId);
+    endTime = null;
+    running = false;
+    document.getElementById('btn-start').textContent = '▶';
+  }
+}
+
+function reset() {
+  clearInterval(intervalId);
+  running = false;
+  endTime = null;
+  phase = 'FOCUS';
+  remaining = phaseSeconds('FOCUS');
+  applyPhemeTheme();
+  document.getElementById('btn-start').textContent = '▶';
+  updateDisplay();
+}
+
+function skipPhase() {
+  playBeep();
+  flash();
+  startPhase(phase === 'FOCUS' ? 'BREAK' : 'FOCUS');
+}
+
+function switchPhase(p) {
+  if (running) return;
+  phase = p;
+  remaining = phaseSeconds(p);
+  endTime = null;
+  applyPhemeTheme();
+  updateDisplay();
+}
+
+function toggleSound() {
+  settings.sound = !settings.sound;
+  document.getElementById('btn-sound').classList.toggle('muted', !settings.sound);
+  saveSettings();
+}
+
+function toggleAuto() {
+  settings.autoAdvance = !settings.autoAdvance;
+  document.getElementById('btn-auto').classList.toggle('active', settings.autoAdvance);
+  saveSettings();
+}
+
+function toggleSettings() {
+  const panel = document.getElementById('settings-panel');
+  panel.style.display = panel.style.display === 'none' ? 'flex' : 'none';
+}
+
+function onSettingChange() {
+  const f = parseInt(document.getElementById('inp-focus').value) || 1;
+  const b = parseInt(document.getElementById('inp-break').value) || 1;
+  settings.focusMin = Math.max(1, Math.min(120, f));
+  settings.breakMin = Math.max(1, Math.min(60, b));
+  if (!running) {
+    remaining = phaseSeconds(phase);
+    updateDisplay();
+  }
+  saveSettings();
+}
+
+function saveSettings() {
+  try { localStorage.setItem('pomodoroSettings', JSON.stringify(settings)); } catch(e) {}
+}
+
+init();
+</script>
+</body>
+</html>
