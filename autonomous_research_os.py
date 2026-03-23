@@ -7,8 +7,9 @@ import os
 import json
 import time
 import feedparser
-import google.generativeai as genai
-from github import Github
+from google import genai
+from google.genai import types
+from github import Auth, Github
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -17,14 +18,17 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 GITHUB_REPO = os.getenv("GITHUB_REPO")
 
-genai.configure(api_key=GEMINI_API_KEY)
-model = genai.GenerativeModel("gemini-1.5-pro")
+client = genai.Client(api_key=GEMINI_API_KEY)
+MODEL = "gemini-2.0-flash"
 
 
 def call_llm(prompt: str, retries: int = 3) -> str:
     for attempt in range(retries):
         try:
-            response = model.generate_content(prompt)
+            response = client.models.generate_content(
+                model=MODEL,
+                contents=prompt,
+            )
             return response.text
         except Exception as e:
             if attempt < retries - 1:
@@ -59,7 +63,7 @@ def fetch_arxiv_papers(query: str = "LLM polymer design", max_results: int = 5) 
 def fetch_failure_log() -> str:
     print("[Phase 1] GitHubからfailure_log.md を取得...")
     try:
-        g = Github(GITHUB_TOKEN)
+        g = Github(auth=Auth.Token(GITHUB_TOKEN))
         repo = g.get_repo(GITHUB_REPO)
         contents = repo.get_contents("failure_log.md")
         return contents.decoded_content.decode("utf-8")
@@ -216,7 +220,7 @@ def format_markdown(mechanism: str, patent_draft: str, validation: str, evaluati
 
 def post_github_issue(title: str, body: str) -> str:
     print("[Phase 4] GitHubにIssueを起票中...")
-    g = Github(GITHUB_TOKEN)
+    g = Github(auth=Auth.Token(GITHUB_TOKEN))
     repo = g.get_repo(GITHUB_REPO)
     issue = repo.create_issue(title=title, body=body, labels=[])
     return issue.html_url
